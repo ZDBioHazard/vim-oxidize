@@ -36,13 +36,30 @@ function! s:ln(group, target)
     execute 'highlight! link '.a:group.' '.a:target
 endfunction
 
+function! s:gray(level)
+    if a:level <= 0
+        return ['#000000', 16]
+    elseif a:level >= 25
+        return ['#FFFFFF', 231]
+    endif
+
+    let l:value = 0x08 + (10 * (a:level - 1)) " Generate the X11 gray value
+    return [printf('#%02X%02X%02X', l:value, l:value, l:value), a:level + 231]
+endfunction
+
+" ----------------------------------------------------------------------------
+"  User-defined options
+" ----------------------------------------------------------------------------
+
+if !exists('g:oxidize_brightness')
+    let g:oxidize_brightness = 2
+endif
+
 " ----------------------------------------------------------------------------
 "  Define the color palette
 " ----------------------------------------------------------------------------
 
 " A Tango-ish palette, adapted to the xterm-256color palette as best I could
-let s:aluminum  = [['#EEEEEE', 255], ['#DADADA', 253], ['#BCBCBC', 250]]
-let s:slate     = [['#8A8A8A', 245], ['#585858', 240], ['#303030', 236]]
 let s:butter    = [['#FFFF87', 228], ['#FFD700', 220], ['#D7AF00', 178]]
 let s:orange    = [['#FFAF5F', 215], ['#FF8700', 208], ['#D75F00', 166]]
 let s:chocolate = [['#D7AF5F', 179], ['#AF875F', 137], ['#875F00',  94]]
@@ -51,16 +68,23 @@ let s:chameleon = [['#87FF00', 118], ['#87D700', 112], ['#5FAF00',  70]]
 let s:skyblue   = [['#5FAFFF',  75], ['#0087AF',  31], ['#005FAF',  25]]
 let s:plum      = [['#AF87AF', 139], ['#875F87',  96], ['#5F00AF',  55]]
 
-" Set the range of grays used for most interface elements
-let s:fgcolor  = ['#FFFFFF', 231]
-let s:bgcolor  = ['#000000',  16]
-let s:gutter   = ['#121212', 233]
-let s:frames   = ['#262626', 235]
+" Clamp the brightness to a 'reasonable' value
+let s:brightness = max([0, min([8, g:oxidize_brightness])])
+
+" Set all the grays that are related to the background brightness
+let s:fgcolor  = s:gray(25)
+let s:bgcolor  = s:gray(s:brightness +  0)
+let s:guides = [ s:gray(s:brightness +  1),
+               \ s:gray(s:brightness +  2) ]
+let s:gutter   = s:gray(s:brightness +  2)
+let s:frames   = s:gray(s:brightness +  4)
+let s:selected = s:gray(s:brightness +  6)
+let s:nontext  = s:gray(s:brightness +  8)
+let s:comment  = s:gray(s:brightness + 12)
+let s:inactive = s:gray(s:brightness + 14)
 
 " Common color aliases
 let s:active   = s:butter[2]
-let s:inactive = s:aluminum[2]
-let s:nontext  = s:slate[1]
 let s:folded   = s:plum[0]
 
 let s:hint     = s:chocolate[0]
@@ -106,7 +130,7 @@ call s:hi('NonText',   {'fg': s:nontext})
 call s:hi('Search',    {'fg': s:fgcolor, 'bg': s:plum[1]})
 call s:hi('SpellBad',  {'st': 'underline'})
 call s:hi('Todo',      {'fg': s:error, 'bg': s:warning, 'st': 'bold'})
-call s:hi('Visual',    {'fg': s:fgcolor, 'bg': s:slate[2]})
+call s:hi('Visual',    {'fg': s:fgcolor, 'bg': s:selected})
 
 call s:ln('Conceal',    'NonText')
 call s:ln('SpellCap',   'SpellBad')
@@ -136,7 +160,7 @@ call s:hi('DiagnosticError', {'fg': s:error})
 " ----------------------------------------------------------------------------
 
 call s:hi('Brace',      {'fg': s:chocolate[0]})
-call s:hi('Comment',    {'fg': s:slate[0], 'st': 'italic'})
+call s:hi('Comment',    {'fg': s:comment, 'st': 'italic'})
 call s:hi('Function',   {'fg': s:butter[0]})
 call s:hi('Identifier', {'fg': s:skyblue[0]})
 call s:hi('Number',     {'fg': s:orange[2]})
@@ -144,7 +168,7 @@ call s:hi('Operator',   {'fg': s:chameleon[1]})
 call s:hi('PreProc',    {'fg': s:plum[0]})
 call s:hi('Statement',  {'fg': s:orange[1]})
 call s:hi('String',     {'fg': s:butter[1]})
-call s:hi('Variable',   {'fg': s:aluminum[1]})
+call s:hi('Variable',   {'fg': s:gray(21)})
 
 call s:ln('Delimiter',    'Brace')
 call s:ln('Keyword',      'Identifier')
@@ -314,5 +338,5 @@ call s:ln('SyntasticErrorSign',   'ALEErrorSign')
 if !exists('g:indent_guides_auto_colors')
     let g:indent_guides_auto_colors = 0 " Don't let the plugin guess
 endif
-call s:hi('IndentGuidesOdd',  {'fg': s:nontext, 'bg': ['#080808', 232]})
-call s:hi('IndentGuidesEven', {'fg': s:nontext, 'bg': ['#121212', 233]})
+call s:hi('IndentGuidesOdd',  {'fg': s:nontext, 'bg': s:guides[0]})
+call s:hi('IndentGuidesEven', {'fg': s:nontext, 'bg': s:guides[1]})
