@@ -54,6 +54,9 @@ endfunction
 if !exists('g:oxidize_brightness')
     let g:oxidize_brightness = 2
 endif
+if !exists('g:oxidize_transparent')
+    let g:oxidize_transparent = 0
+endif
 
 " ----------------------------------------------------------------------------
 "  Define the color palette
@@ -73,7 +76,8 @@ let s:brightness = max([0, min([8, g:oxidize_brightness])])
 
 " Set all the grays that are related to the background brightness
 let s:fgcolor  = s:gray(25)
-let s:bgcolor  = s:gray(s:brightness +  0)
+let s:bgcolor  = g:oxidize_transparent ? ['none', 'none'] :
+               \ s:gray(s:brightness +  0)
 let s:guides = [ s:gray(s:brightness +  1),
                \ s:gray(s:brightness +  2) ]
 let s:gutter   = s:gray(s:brightness +  2)
