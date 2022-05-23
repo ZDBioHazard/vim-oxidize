@@ -10,6 +10,8 @@ local function lookup(group)
     return { fg = color.foreground, bg = color.background }
 end
 
+local bold = vim.g['oxidize_use_bold'] == 1 and 'bold' or nil
+
 local a = {
     text     = lookup('SignColumn').bg,
     normal   = lookup('StatusLine').fg,
@@ -22,16 +24,16 @@ local a = {
 
 return {
     normal = {
-        a = {fg = a.text, bg = a.normal, gui = 'bold'},
+        a = {fg = a.text, bg = a.normal, gui = bold},
         b = lookup('SignColumn'),
         c = lookup('StatusLine'),
     },
-    insert   = {a = {fg = a.text, bg = a.insert, gui = 'bold'}},
-    replace  = {a = {fg = a.text, bg = a.replace, gui = 'bold'}},
-    visual   = {a = {fg = a.text, bg = a.visual, gui = 'bold'}},
-    command  = {a = {fg = a.text, bg = a.command, gui = 'bold'}},
+    insert   = {a = {fg = a.text, bg = a.insert, gui = bold}},
+    replace  = {a = {fg = a.text, bg = a.replace, gui = bold}},
+    visual   = {a = {fg = a.text, bg = a.visual, gui = bold}},
+    command  = {a = {fg = a.text, bg = a.command, gui = bold}},
     inactive = {
-        a = {fg = a.text, bg = a.inactive, gui = 'bold'},
+        a = {fg = a.text, bg = a.inactive, gui = bold},
         c = lookup('StatusLineNC'),
     },
 }

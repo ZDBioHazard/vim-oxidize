@@ -23,7 +23,7 @@ function! s:hi(group, style)
     if has_key(a:style, 'bg')
         let l:cmd .= ' guibg='.a:style['bg'][0].' ctermbg='.a:style['bg'][1]
     endif
-    if has_key(a:style, 'st')
+    if has_key(a:style, 'st') && a:style['st'] != 'none'
         let l:cmd .= ' gui='.a:style['st'].' cterm='.a:style['st']
     endif
 
@@ -47,16 +47,20 @@ function! s:gray(level)
     return [printf('#%02X%02X%02X', l:value, l:value, l:value), a:level + 231]
 endfunction
 
+function! s:config_default(name, value)
+    if !exists(a:name)
+        execute 'let '.a:name.' = '.a:value
+    endif
+endfunction
+
 " ----------------------------------------------------------------------------
 "  User-defined options
 " ----------------------------------------------------------------------------
 
-if !exists('g:oxidize_brightness')
-    let g:oxidize_brightness = 2
-endif
-if !exists('g:oxidize_transparent')
-    let g:oxidize_transparent = 0
-endif
+call s:config_default('g:oxidize_brightness', 2)
+call s:config_default('g:oxidize_transparent', 0)
+call s:config_default('g:oxidize_use_bold', 1)
+call s:config_default('g:oxidize_use_italic', 1)
 
 " ----------------------------------------------------------------------------
 "  Define the color palette
@@ -100,6 +104,10 @@ let s:added    = s:chameleon[1]
 let s:changed  = s:butter[1]
 let s:deleted  = s:scarlet[0]
 
+" Define the configured bold and italic aliases
+let s:bold   = g:oxidize_use_bold   ? 'bold'   : 'none'
+let s:italic = g:oxidize_use_italic ? 'italic' : 'none'
+
 " ----------------------------------------------------------------------------
 "  Vim user interface
 " ----------------------------------------------------------------------------
@@ -111,7 +119,7 @@ call s:hi('VertSplit',    {'fg': s:frames,   'bg': s:frames})
 call s:hi('LineNr',       {'fg': s:inactive, 'bg': s:frames})
 call s:hi('SignColumn',   {'fg': s:inactive, 'bg': s:gutter})
 call s:hi('CursorLine',   {                  'bg': s:gutter})
-call s:hi('CursorLineNr', {'fg': s:active,   'bg': s:gutter, 'st': 'bold'})
+call s:hi('CursorLineNr', {'fg': s:active,   'bg': s:gutter, 'st': s:bold})
 call s:hi('ModeMsg',      {'fg': s:frames,   'bg': s:active})
 call s:hi('Pmenu',        {'fg': s:inactive, 'bg': s:gutter})
 call s:hi('PmenuSel',     {'fg': s:active,   'bg': s:frames})
@@ -133,7 +141,7 @@ call s:hi('Folded',    {'fg': s:folded})
 call s:hi('NonText',   {'fg': s:nontext})
 call s:hi('Search',    {'fg': s:fgcolor, 'bg': s:plum[1]})
 call s:hi('SpellBad',  {'st': 'underline'})
-call s:hi('Todo',      {'fg': s:error, 'bg': s:warning, 'st': 'bold'})
+call s:hi('Todo',      {'fg': s:error, 'bg': s:warning, 'st': s:bold})
 call s:hi('Visual',    {'fg': s:fgcolor, 'bg': s:selected})
 
 call s:ln('Conceal',    'NonText')
@@ -147,8 +155,8 @@ call s:ln('VisualNOS',  'Visual')
 " Information
 call s:hi('MoreMsg',    {'fg': s:hint,    'bg': s:gutter})
 call s:hi('Question',   {'fg': s:info,    'bg': s:gutter})
-call s:hi('WarningMsg', {'fg': s:warning, 'bg': s:gutter, 'st': 'bold'})
-call s:hi('ErrorMsg',   {'fg': s:error,   'bg': s:gutter, 'st': 'bold'})
+call s:hi('WarningMsg', {'fg': s:warning, 'bg': s:gutter, 'st': s:bold})
+call s:hi('ErrorMsg',   {'fg': s:error,   'bg': s:gutter, 'st': s:bold})
 
 call s:hi('DiffAdd',    {'fg': s:added})
 call s:hi('DiffChange', {'fg': s:changed})
@@ -164,7 +172,7 @@ call s:hi('DiagnosticError', {'fg': s:error})
 " ----------------------------------------------------------------------------
 
 call s:hi('Brace',      {'fg': s:chocolate[0]})
-call s:hi('Comment',    {'fg': s:comment, 'st': 'italic'})
+call s:hi('Comment',    {'fg': s:comment, 'st': s:italic})
 call s:hi('Function',   {'fg': s:butter[0]})
 call s:hi('Identifier', {'fg': s:skyblue[0]})
 call s:hi('Number',     {'fg': s:orange[2]})
@@ -280,13 +288,13 @@ call s:ln('yamlBlockMappingKey', 'Variable')
 " ----------------------------------------------------------------------------
 
 " Plugin - kyazdani42/nvim-tree.lua
-call s:hi('NvimTreeExecFile',     {'fg': s:fgcolor, 'st': 'italic'})
+call s:hi('NvimTreeExecFile',     {'fg': s:fgcolor, 'st': s:italic})
 call s:hi('NvimTreeFolderIcon',   {'fg': s:skyblue[0]})
 call s:hi('NvimTreeIndentMarker', {'fg': s:folded})
 call s:hi('NvimTreeNormal',       {'fg': s:fgcolor})
 call s:hi('NvimTreeRootFolder',   {'fg': s:orange[1]})
-call s:hi('NvimTreeSymlink',      {'fg': s:chameleon[1], 'st': 'italic'})
-call s:hi('NvimTreeWindowPicker', {'fg': s:gutter, 'bg': s:info, 'st': 'bold'})
+call s:hi('NvimTreeSymlink',      {'fg': s:chameleon[1], 'st': s:italic})
+call s:hi('NvimTreeWindowPicker', {'fg': s:gutter, 'bg': s:info, 'st': s:bold})
 
 call s:ln('NvimTreeFolderName',       'Directory')
 call s:ln('NvimTreeEmptyFolderName',  'NvimTreeFolderName')
@@ -296,9 +304,9 @@ call s:ln('NvimTreeImageFile',        'NvimTreeFileIcon')
 call s:ln('NvimTreeOpenedFile',       'NvimTreeFileIcon')
 call s:ln('NvimTreeSpecialFile',      'NvimTreeFileIcon')
 
-call s:hi('NvimTreeGitDeleted', {'fg': s:deleted, 'st': 'bold'})
-call s:hi('NvimTreeGitDirty',   {'fg': s:changed, 'st': 'bold'})
-call s:hi('NvimTreeGitStaged',  {'fg': s:added,   'st': 'bold'})
+call s:hi('NvimTreeGitDeleted', {'fg': s:deleted, 'st': s:bold})
+call s:hi('NvimTreeGitDirty',   {'fg': s:changed, 'st': s:bold})
+call s:hi('NvimTreeGitStaged',  {'fg': s:added,   'st': s:bold})
 
 call s:ln('NvimTreeGitMerge',   'NvimTreeGitDeleted')
 call s:ln('NvimTreeGitNew',     'NvimTreeGitStaged')
@@ -324,9 +332,9 @@ call s:hi('GitGutterDelete',       {'fg': s:deleted,   'bg': s:gutter})
 call s:hi('GitGutterChangeDelete', {'fg': s:orange[2], 'bg': s:gutter})
 
 " Plugin - dense-analysis/ale
-call s:hi('ALEInfoSign',    {'fg': s:bgcolor, 'bg': s:info,    'st': 'bold'})
-call s:hi('ALEWarningSign', {'fg': s:error,   'bg': s:warning, 'st': 'bold'})
-call s:hi('ALEErrorSign',   {'fg': s:fgcolor, 'bg': s:error,   'st': 'bold'})
+call s:hi('ALEInfoSign',    {'fg': s:bgcolor, 'bg': s:info,    'st': s:bold})
+call s:hi('ALEWarningSign', {'fg': s:error,   'bg': s:warning, 'st': s:bold})
+call s:hi('ALEErrorSign',   {'fg': s:fgcolor, 'bg': s:error,   'st': s:bold})
 
 call s:ln('ALEInfo',    'SpellBad')
 call s:ln('ALEWarning', 'SpellBad')
